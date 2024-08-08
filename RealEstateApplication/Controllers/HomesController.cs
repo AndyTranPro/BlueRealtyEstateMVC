@@ -13,18 +13,50 @@ namespace RealEstateApplication.Controllers
             _homeService = homeService;
         }
 
-        public IActionResult Index()
+        public IActionResult Index(int? minPrice, int? maxPrice, int? minArea, int?maxArea)
         {
             var homesViewModel = new HomesViewModel();
 
             try
             {
-                homesViewModel.Homes = _homeService.GetHomes();
+                var homes = _homeService.GetHomes();
+                // filter homes by MinPrice and MaxPrice if they are provided
+                if (minPrice.HasValue)
+                {
+                    homes = homes.Where(h => h.Price >= minPrice.Value).ToList();
+                }
+                if (maxPrice.HasValue)
+                {
+                    homes = homes.Where(h => h.Price <= maxPrice.Value).ToList();
+                }
+                // filter homes by MinArea and MaxArea if they are provided
+                if (minArea.HasValue)
+                {
+                    homes = homes.Where(h => h.Area >= minArea.Value).ToList();
+                }
+                if (maxArea.HasValue)
+                {
+                    homes = homes.Where(h => h.Area <= maxArea.Value).ToList();
+                }
+                homesViewModel.Homes = homes;
             } catch (Exception ex)
             {
                 TempData["ErrorMessage"] = $"Error getting homes from the database: {ex.Message}";
             }
+            // pass the MinPrice and MaxPrice to the view so that the user can see the filter values
+            homesViewModel.MinPrice = minPrice;
+            homesViewModel.MaxPrice = maxPrice;
+            // pass the MinArea and MaxArea to the view so that the user can see the filter values
+            homesViewModel.MinArea = minArea;
+            homesViewModel.MaxArea = maxArea;
+
             return View(homesViewModel);
+        }
+
+        [HttpGet]
+        public IActionResult ClearFilters()
+        {
+            return RedirectToAction("Index");
         }
 
         [HttpGet]

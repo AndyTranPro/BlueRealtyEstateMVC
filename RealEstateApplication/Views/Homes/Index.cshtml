@@ -1,6 +1,33 @@
 ﻿@using RealEstateApplication.Models
 @model HomesViewModel
 
+<div class="filter-section mt-3">
+    <form asp-controller="Homes" asp-action="Index" method="get">
+        <div class="row">
+            <div class="col-md-3">
+                <input type="number" class="form-control mb-2" id="minPrice" name="minPrice" placeholder="Min Price" value="@Model.MinPrice">
+            </div>
+            <div class="col-md-3">
+                <input type="number" class="form-control mb-2" id="maxPrice" name="maxPrice" placeholder="Max Price" value="@Model.MaxPrice">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3">
+                    <input type="number" class="form-control mb-2" id="minArea" name="minArea" placeholder="Min Area (m²)" value="@Model.MinArea">
+            </div>
+            <div class="col-md-3">
+                    <input type="number" class="form-control mb-2" id="maxArea" name="maxArea" placeholder="Max Area (m²)" value="@Model.MaxArea">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary">Filter</button>
+                <a asp-controller="Homes" asp-action="ClearFilters" class="btn btn-secondary ml-2">Clear Filters</a>
+            </div>
+        </div>
+    </form>
+</div>
+
 <div>
     @if (TempData["SuccessMessage"] != null)
     {

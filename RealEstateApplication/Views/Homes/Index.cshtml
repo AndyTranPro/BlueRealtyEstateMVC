@@ -1,5 +1,5 @@
-﻿@page
-@model RealEstateApplication.Pages.IndexModel
+﻿@using RealEstateApplication.Models
+@model HomesViewModel
 
 <div>
     @if (TempData["SuccessMessage"] != null)
@@ -16,7 +16,7 @@
         </div>
     }
 
-    <a class="btn btn-success mt-3 mb-3" asp-page="/AddHome">Add Home</a>
+    <a class="btn btn-success mt-3 mb-3" asp-controller="Homes" asp-action="AddHomeView">Add Home</a>
 
     <h2>List of Homes</h2>
 
@@ -35,7 +35,7 @@
                                 <p class="home-area">@($"{home.Area}") m<sup>2</sup></p>
                             </div>
                             <p class="home-price">@($"${home.Price}")</p>
-                            <a asp-page="/HomeDetail" asp-route-id="@home.Id" class="btn btn-outline-secondary btn-block">View Details</a>
+                            <a asp-controller="Homes" asp-action="HomeDetailView" asp-route-id="@home.Id" class="btn btn-outline-secondary btn-block">View Details</a>
                         </div>
                     </div>
                 </div>

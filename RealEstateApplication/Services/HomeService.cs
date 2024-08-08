@@ -1,9 +1,12 @@
-﻿using RealEstateApplication.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using RealEstateApplication.Models;
+using System.Net;
 
 namespace RealEstateApplication.Services
 {
     public class HomeService
     {
+        private const string DefaultImageUrl = "https://via.placeholder.com/300x200.png?text=Default+House+Image";
         private List<Home> _homes;
         private readonly HomeContext _context;
 
@@ -49,20 +52,31 @@ namespace RealEstateApplication.Services
 
         public void AddHome(Home home)
         {
+            if (string.IsNullOrEmpty(home.ImageUrl))
+            {
+                home.ImageUrl = DefaultImageUrl;
+            }
             _context.Homes.Add(home);
             _context.SaveChanges();
         }
 
         public void DeleteHome(int id)
         {
+            Console.WriteLine($"Home with ID {id} deleted successfully.");
             var home = _context.Homes.FirstOrDefault(h => h.Id == id);
-
+            Console.WriteLine(home);
+            Console.WriteLine("Current list of homes:");
+            foreach (var h in _context.Homes)
+            {
+                Console.WriteLine($"ID: {h.Id}, Price: {h.Price}, Address: {h.Address}, Area: {h.Area}");
+            }
             _context.Homes.Remove(home);
             _context.SaveChanges();
         }
 
         public void UpdateHome(Home updatedHome)
         {
+            Console.WriteLine($"Home with ID {updatedHome.Id} updated successfully.");
             var home = _context.Homes.FirstOrDefault(h => h.Id == updatedHome.Id);
 
             home.Price = updatedHome.Price;

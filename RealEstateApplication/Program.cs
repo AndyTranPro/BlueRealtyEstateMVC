@@ -8,11 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<HomeContext>(opt => opt.UseSqlite("Data Source=bsr.db"));
 
 builder.Services.AddScoped<HomeService>();
-builder.Services.AddRazorPages(options =>
-{
-    // use the ignore antiforgery token attribute to ensure that the form submission works
-    options.Conventions.ConfigureFilter(new IgnoreAntiforgeryTokenAttribute());
-});
+builder.Services.AddControllersWithViews();
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -25,5 +22,8 @@ using (var scope = app.Services.CreateScope())
 
 app.UseStaticFiles();
 
-app.MapRazorPages();
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Homes}/{action=Index}/{id?}");
+
 app.Run();

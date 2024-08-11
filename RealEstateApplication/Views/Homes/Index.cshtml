@@ -3,12 +3,19 @@
 
 <partial name="_FilterSection" model="Model" />
 
-<div>
+<div class="pt-5">
+    @if (ViewBag.LoadTestTime != null)
+    {
+        <div class="alert alert-info" role="alert">
+            Load test simulation time: @ViewBag.LoadTestTime seconds
+        </div>
+    }
+
     <partial name="_AlertMessages" model="Model" />
 
     <a class="btn btn-success mt-3 mb-3" asp-controller="Homes" asp-action="AddHomeView">Add Home</a>
 
-    <h2>List of Homes</h2>
+    <h2>@ViewBag.HomesCount homes found.</h2>
 
     @if (Model.Homes != null && Model.Homes.Count > 0)
     {

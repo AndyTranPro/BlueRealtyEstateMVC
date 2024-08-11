@@ -1,20 +1,40 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RealEstateApplication.Models;
 using RealEstateApplication.Services;
+using System.Diagnostics;
 
 namespace RealEstateApplication.Controllers
 {
     public class HomesController : Controller
     {
         private readonly HomeService _homeService;
+        private readonly AddressService _addressService;
 
-        public HomesController(HomeService homeService)
+        public HomesController(HomeService homeService, AddressService addressService)
         {
             _homeService = homeService;
+            _addressService = addressService;
+        }
+
+        [HttpGet]
+        public IActionResult GetStates()
+        {
+            var states = _addressService.GetAmericanStates();
+            return Ok(states);
+        }
+
+        [HttpPost]
+        public IActionResult GetCities([FromBody] CityRequest request)
+        {
+            var cities = _addressService.GetCitiesInState(request.State);
+            return Ok(cities);
         }
 
         public IActionResult Index(int? minPrice, int? maxPrice, int? minArea, int?maxArea)
         {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             var homesViewModel = new HomesViewModel();
 
             try
@@ -39,6 +59,7 @@ namespace RealEstateApplication.Controllers
                     homes = homes.Where(h => h.Area <= maxArea.Value).ToList();
                 }
                 homesViewModel.Homes = homes;
+                ViewBag.HomesCount = homes.Count;
             } catch (Exception ex)
             {
                 TempData["ErrorMessage"] = $"Error getting homes from the database: {ex.Message}";
@@ -49,6 +70,9 @@ namespace RealEstateApplication.Controllers
             // pass the MinArea and MaxArea to the view so that the user can see the filter values
             homesViewModel.MinArea = minArea;
             homesViewModel.MaxArea = maxArea;
+
+            stopwatch.Stop();
+            ViewBag.LoadTestTime = stopwatch.Elapsed.TotalSeconds.ToString("F4");
 
             return View(homesViewModel);
         }

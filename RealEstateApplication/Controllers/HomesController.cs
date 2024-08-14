@@ -1,152 +1,155 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using RealEstateApplication.Models;
-using RealEstateApplication.Services;
+﻿using BSR.Models;
+using BSR.Services;
+using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
-namespace RealEstateApplication.Controllers
+namespace BSR.Controllers;
+
+public class HomesController: Controller
 {
-    public class HomesController : Controller
+    private readonly HomeService _homeService;
+    private readonly AddressService _addressService;
+
+    public HomesController(HomeService homeService, AddressService addressService)
     {
-        private readonly HomeService _homeService;
-        private readonly AddressService _addressService;
+        _homeService = homeService;
+        _addressService = addressService;
+    }
 
-        public HomesController(HomeService homeService, AddressService addressService)
+    public async Task<IActionResult> GetCities(string state)
+    {
+        var cities = await _addressService.GetCitiesInState(state);
+        return Ok(cities);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> AddHomeView()
+    {
+        var statesResult = await _addressService.GetAmericanStates();
+
+        var addHomeViewModel = new AddHomeViewModel
         {
-            _homeService = homeService;
-            _addressService = addressService;
-        }
+            States = statesResult,
+            Cities = new List<string>()
+        };
 
-        [HttpGet]
-        public IActionResult GetStates()
+        return View(addHomeViewModel);
+    }
+
+    public async Task<IActionResult> Index(int? minPrice, int? maxPrice, int? minArea, int? maxArea)
+    {
+        var stopwatch = new Stopwatch();
+        stopwatch.Start();
+
+        var homesViewModel = new HomesViewModel();
+
+        try
         {
-            var states = _addressService.GetAmericanStates();
-            return Ok(states);
-        }
+            // Initially, get all homes
+            var homes = _homeService.GetHomes();
 
-        [HttpPost]
-        public IActionResult GetCities([FromBody] CityRequest request)
-        {
-            var cities = _addressService.GetCitiesInState(request.State);
-            return Ok(cities);
-        }
-
-        public IActionResult Index(int? minPrice, int? maxPrice, int? minArea, int?maxArea)
-        {
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-
-            var homesViewModel = new HomesViewModel();
-
-            try
+            // Apply the price range filter if values are provided
+            if (minPrice.HasValue)
             {
-                var homes = _homeService.GetHomes();
-                // filter homes by MinPrice and MaxPrice if they are provided
-                if (minPrice.HasValue)
-                {
-                    homes = homes.Where(h => h.Price >= minPrice.Value).ToList();
-                }
-                if (maxPrice.HasValue)
-                {
-                    homes = homes.Where(h => h.Price <= maxPrice.Value).ToList();
-                }
-                // filter homes by MinArea and MaxArea if they are provided
-                if (minArea.HasValue)
-                {
-                    homes = homes.Where(h => h.Area >= minArea.Value).ToList();
-                }
-                if (maxArea.HasValue)
-                {
-                    homes = homes.Where(h => h.Area <= maxArea.Value).ToList();
-                }
-                homesViewModel.Homes = homes;
-                ViewBag.HomesCount = homes.Count;
-            } catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = $"Error getting homes from the database: {ex.Message}";
+                homes = homes.Where(h => h.Price >= minPrice.Value).ToList();
             }
-            // pass the MinPrice and MaxPrice to the view so that the user can see the filter values
-            homesViewModel.MinPrice = minPrice;
-            homesViewModel.MaxPrice = maxPrice;
-            // pass the MinArea and MaxArea to the view so that the user can see the filter values
-            homesViewModel.MinArea = minArea;
-            homesViewModel.MaxArea = maxArea;
-
-            stopwatch.Stop();
-            ViewBag.LoadTestTime = stopwatch.Elapsed.TotalSeconds.ToString("F4");
-
-            return View(homesViewModel);
-        }
-
-        [HttpGet]
-        public IActionResult ClearFilters()
-        {
-            return RedirectToAction("Index");
-        }
-
-        [HttpGet]
-        public IActionResult AddHomeView()
-        {
-            return View();
-        }
-        [HttpPost]
-        public IActionResult AddHome(Home newHome)
-        {
-            if (!ModelState.IsValid)
+            if (maxPrice.HasValue)
             {
-                return View("AddHomeView", newHome);
+                homes = homes.Where(h => h.Price <= maxPrice.Value).ToList();
             }
 
-            try
+            // Apply the area range filter if values are provided
+            if (minArea.HasValue)
             {
-                _homeService.AddHome(newHome);
-                TempData["SuccessMessage"] = "Home added successfully!";
-                return RedirectToAction("Index", "Homes");
-            } catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = $"Error adding home: {ex.Message}";
-                return View("AddHomeView", newHome);
+                homes = homes.Where(h => h.Area >= minArea.Value).ToList();
             }
+            if (maxArea.HasValue)
+            {
+                homes = homes.Where(h => h.Area <= maxArea.Value).ToList();
+            }
+
+            homesViewModel.Homes = homes;
+            ViewBag.HomesCount = homes.Count;
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = $"Error fetching homes from the database: {ex.Message}";
         }
 
-        [HttpGet]
-        public IActionResult HomeDetailView(int id)
+        // Pass the filter values back to the view to retain them
+        homesViewModel.MinPrice = minPrice;
+        homesViewModel.MaxPrice = maxPrice;
+        homesViewModel.MinArea = minArea;
+        homesViewModel.MaxArea = maxArea;
+
+        stopwatch.Stop();
+
+        ViewBag.LoadTestTime = stopwatch.Elapsed.TotalSeconds.ToString("F4"); // Return the elapsed time in milliseconds
+
+        return View(homesViewModel);
+    }
+
+    [HttpPost]
+    public IActionResult AddHome(Home newHome)
+    {
+        if (!ModelState.IsValid)
         {
-            var home = _homeService.GetHomeById(id);
-            return View(home);
+            return View("AddHomeView", newHome); 
         }
 
-        [HttpPost]
-        public IActionResult Update(Home updatedHome)
+        try
         {
-            if (!ModelState.IsValid)
-            {
-                return View("HomeDetailView", updatedHome);
-            }
+            _homeService.AddHome(newHome);
+            TempData["SuccessMessage"] = "Home added successfully!";
+            return RedirectToAction("Index", "Homes"); 
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = $"Error adding home: {ex.Message}";
+            return View("AddHomeView", newHome); 
+        }
+    }
 
-            try
-            {
-                _homeService.UpdateHome(updatedHome);
-                TempData["SuccessMessage"] = "Home updated successfully!";
-                return RedirectToAction("Index", "Homes");
-            } catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = $"Error updating home: {ex.Message}";
-                return View("HomeDetailView", updatedHome);
-            }
+    [HttpGet]
+    public IActionResult HomeDetailView(int id)
+    {
+        var home = _homeService.GetHomeById(id);
+        return View(home);
+    }
+
+    [HttpPost]
+    public IActionResult Update(Home updatedHome)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View("HomeDetailView", updatedHome);
         }
 
-        public IActionResult Delete(int id)
+        try
         {
-            try
-            {
-                _homeService.DeleteHome(id);
-                TempData["SuccessMessage"] = "Home deleted successfully!";
-                return new OkResult();
-            } catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = $"Error deleting home: {ex.Message}";
-                return BadRequest(new { message = ex.Message });
-            }
+            _homeService.UpdateHome(updatedHome);
+            TempData["SuccessMessage"] = "Home updated successfully!";
+            return RedirectToAction("Index", "Homes");
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = $"Error updating home: {ex.Message}";
+            return View("HomeDetailView", updatedHome);
+        }
+    }
+
+    public IActionResult Delete(int id)
+    {
+        try
+        {
+            _homeService.DeleteHome(id);
+            TempData["SuccessMessage"] = "Home deleted successfully!";
+            return new OkResult();
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = $"Error deleting home: {ex.Message}";
+            return BadRequest(new { message = ex.Message });
         }
     }
 }

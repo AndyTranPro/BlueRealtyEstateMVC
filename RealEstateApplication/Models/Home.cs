@@ -1,21 +1,15 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-
-namespace RealEstateApplication;
+﻿namespace BSR;
 
 public class Home
 {
     public int Id { get; set; }
-
-    [Required(ErrorMessage = "This address field is required")]
-    public string Address { get; set; }
-
-    [Required(ErrorMessage = "The price field is required")]
-    [Range(1, double.MaxValue, ErrorMessage = "The price must be a positive value")]
+    public string StreetAddress { get; set; }
+    public string City { get; set; }
+    public string State { get; set; }
+    public int Bedrooms { get; set; }
+    public int Bathrooms { get; set; }
+    public int GarageSpots { get; set; }
     public decimal Price { get; set; }
-
-    [Required(ErrorMessage = "The area field is required")]
-    [Range(1, double.MaxValue, ErrorMessage = "The area must be a positive value")]
     public int Area { get; set; }
-    public string? ImageUrl { get; set; }
+    public string ImageUrl { get; set; }
 }

@@ -1,32 +1,66 @@
-﻿@using RealEstateApplication
-@model Home
-@{
-}
+﻿@using BSR
+@model AddHomeViewModel
 
-@if (TempData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger mt-3" role="alert">
-        @TempData["ErrorMessage"]
-    </div>
-}
+<partial name="_AlertMessages" />
 
-<a class="btn btn-outline-dark mt-3 mb-3" asp-controller="Homes" asp-action="Index">Back to Home List</a>
+<a class="btn btn-outline-dark mt-3 mb-3" asp-page="/Index">Back to Home List</a>
 
 <h2>Add a New Home</h2>
 
-<form class="pb-3" method="post" asp-controller="Homes" asp-action="AddHome">
+<form class="pb-3" asp-action="AddHome" asp-controller="Homes" method="post">
     <div asp-validation-summary="All" class="text-danger"></div>
     <div class="form-group pb-3 w-25">
         <label>Price</label>
         <input asp-for="Price" class="form-control" />
     </div>
-    <div class="form-group pb-3 w-25">
-        <label>Address</label>
-        <input asp-for="Address" class="form-control" />
+
+    <div class="form-group pb-3 w-100">
+        <label>Street Address</label>
+        <input asp-for="StreetAddress" class="form-control"/>
     </div>
+
+    <div class="form-group pb-3 w-25">
+        <label for="statesDropdown">State</label>
+        <select asp-for="State" class="form-control" id="statesDropdown">
+            <option value="">Select State</option>
+            @foreach (var state in Model.States)
+            {
+                <option value="@state">@state</option>
+            }
+        </select>
+    </div>
+
+    <div class="form-group pb-3 w-25">
+        <label for="citiesDropdown">City</label>
+        <select asp-for="City" class="form-control" id="citiesDropdown">
+            <option value="">Select City</option>
+            @foreach (var city in Model.Cities)
+            {
+                <option value="@city">@city</option>
+            }
+        </select>
+    </div>
+
     <div class="form-group pb-3 w-25">
         <label>Square Meters</label>
         <input asp-for="Area" class="form-control" />
     </div>
+
+    <div class="form-group pb-3 w-25">
+        <label>Bedrooms</label>
+        <input asp-for="Bedrooms" class="form-control" type="number" min="1" max="5" />
+    </div>
+
+    <div class="form-group pb-3 w-25">
+        <label>Bathrooms</label>
+        <input asp-for="Bathrooms" class="form-control" type="number" min="1" max="5" />
+    </div>
+
+    <div class="form-group pb-3 w-25">
+        <label>Garage Spots</label>
+        <input asp-for="GarageSpots" class="form-control" type="number" min="1" max="5" />
+    </div>
+
     <input type="submit" class="btn btn-success" value="Add Home" />
 </form>
+

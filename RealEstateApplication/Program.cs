@@ -1,7 +1,6 @@
-using Microsoft.AspNetCore.Mvc;
+using BSR.Models;
+using BSR.Services;
 using Microsoft.EntityFrameworkCore;
-using RealEstateApplication.Models;
-using RealEstateApplication.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,12 +13,13 @@ builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
+
 using (var scope = app.Services.CreateScope())
 {
-    var services = scope.ServiceProvider;
-    var context = services.GetRequiredService<HomeContext>();
-    context.Database.EnsureDeleted();
-    context.Database.EnsureCreated();
+    var dbContext = scope.ServiceProvider.GetRequiredService<HomeContext>();
+    dbContext.Database.EnsureDeleted();
+    dbContext.Database.EnsureCreated();
+
 }
 
 app.UseStaticFiles();

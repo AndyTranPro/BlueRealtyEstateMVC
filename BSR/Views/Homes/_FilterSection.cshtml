@@ -4,19 +4,74 @@
 <div class="filter-section mt-3">
     <form asp-controller="Homes" asp-action="Index" method="get">
         <div class="row">
-            <div class="col-md-3">
-                <input type="number" class="form-control mb-2" id="minPrice" name="minPrice" placeholder="Min Price" value="@Model.MinPrice">
+            <div class="col-md-2">
+                <div class="form-floating mb-2">
+                    <input type="number" class="form-control" id="minPrice" name="minPrice" placeholder=" " value="@Model.MinPrice">
+                    <label for="minPrice">Min Price</label>
+                </div>
             </div>
-            <div class="col-md-3">
-                <input type="number" class="form-control mb-2" id="maxPrice" name="maxPrice" placeholder="Max Price" value="@Model.MaxPrice">
+            <div class="col-md-2">
+                <div class="form-floating mb-2">
+                    <input type="number" class="form-control" id="maxPrice" name="maxPrice" placeholder=" " value="@Model.MaxPrice">
+                    <label for="maxPrice">Max Price</label>
+                </div>
             </div>
-        </div>
-        <div class="row">
-            <div class="col-md-3">
-                <input type="number" class="form-control mb-2" id="minArea" name="minArea" placeholder="Min Area (m²)" value="@Model.MinArea">
+            <div class="col-md-2">
+                <div class="form-floating mb-2">
+                    <input type="number" class="form-control" id="minArea" name="minArea" placeholder=" " value="@Model.MinArea">
+                    <label for="minArea">Min Area</label>
+                </div>
             </div>
-            <div class="col-md-3">
-                <input type="number" class="form-control mb-2" id="maxArea" name="maxArea" placeholder="Max Area (m²)" value="@Model.MaxArea">
+            <div class="col-md-2">
+                <div class="form-floating mb-2">
+                    <input type="number" class="form-control" id="maxArea" name="maxArea" placeholder=" " value="@Model.MaxArea">
+                    <label for="maxArea">Max Area</label>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-floating mb-2">
+                    <input type="number" class="form-control" id="minBath" name="minBath" placeholder=" " value="@Model.MinBathrooms">
+                    <label for="minBath">Min Bathrooms</label>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-floating mb-2">
+                    <input type="number" class="form-control" id="minCar" name="minCar" placeholder=" " value="@Model.MinGarage">
+                    <label for="minCar">Min Car Parks</label>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-floating mb-2">
+                    <input type="number" class="form-control" id="minBed" name="minBed" placeholder=" " value="@Model.MinBedrooms">
+                    <label for="minBed">Min Bedrooms</label>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-floating mb-2">
+                    <select class="form-select" id="stateFilter" name="state">
+                        <option value="">Select State</option>
+                        @foreach (var state in Model.States)
+                        {
+                            <option value="@state" selected="@Equals(state, Model.State)">@state</option>
+                        }
+                    </select>
+                    <label for="stateFilter">State</label>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-floating mb-2">
+                    <select class="form-select" id="cityFilter" name="city">
+                        <option value="">Select City</option>
+                        @if (Model.Cities != null)
+                        {
+                            foreach (var city in Model.Cities)
+                            {
+                                <option value="@city" selected="@Equals(city, Model.City)">@city</option>
+                            }
+                        }
+                    </select>
+                    <label for="cityFilter">City</label>
+                </div>
             </div>
         </div>
 

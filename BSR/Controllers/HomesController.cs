@@ -9,11 +9,13 @@ public class HomesController: Controller
 {
     private readonly HomeService _homeService;
     private readonly AddressService _addressService;
+    private readonly ILogger<HomesController> _logger;
 
-    public HomesController(HomeService homeService, AddressService addressService)
+    public HomesController(HomeService homeService, AddressService addressService, ILogger<HomesController> logger)
     {
         _homeService = homeService;
         _addressService = addressService;
+        _logger = logger;
     }
 
     public async Task<IActionResult> GetCities(string state)
@@ -36,7 +38,7 @@ public class HomesController: Controller
         return View(addHomeViewModel);
     }
 
-    public async Task<IActionResult> Index(int? minPrice, int? maxPrice, int? minArea, int? maxArea)
+    public async Task<IActionResult> Index(int? minPrice, int? maxPrice, int? minArea, int? maxArea, int? minBath, int? minCar, int? minBed, string? state, string? city, int pageNumber = 1, int pageSize = 10)
     {
         var stopwatch = new Stopwatch();
         stopwatch.Start();
@@ -45,46 +47,43 @@ public class HomesController: Controller
 
         try
         {
-            // Initially, get all homes
-            var homes = _homeService.GetHomes();
+            //modified
+            var homes = _homeService.GetHomes(minPrice, maxPrice, minArea, maxArea, minBath, minCar, minBed, state, city);
 
-            // Apply the price range filter if values are provided
-            if (minPrice.HasValue)
-            {
-                homes = homes.Where(h => h.Price >= minPrice.Value).ToList();
-            }
-            if (maxPrice.HasValue)
-            {
-                homes = homes.Where(h => h.Price <= maxPrice.Value).ToList();
-            }
+            int totalItems = homes.Count();
+            homes = homes.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
 
-            // Apply the area range filter if values are provided
-            if (minArea.HasValue)
-            {
-                homes = homes.Where(h => h.Area >= minArea.Value).ToList();
-            }
-            if (maxArea.HasValue)
-            {
-                homes = homes.Where(h => h.Area <= maxArea.Value).ToList();
-            }
-
+            //new
+            homesViewModel.States = await _addressService.GetAmericanStates();
             homesViewModel.Homes = homes;
-            ViewBag.HomesCount = homes.Count;
+            homesViewModel.PaginationInfo = new PaginationInfo
+            {
+                CurrentPage = pageNumber,
+                ItemsPerPage = pageSize,
+                TotalItems = totalItems
+            };
+
+            ViewBag.HomesCount = totalItems;
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, $"Error fetching homes from the database: {ex.Message}");
             TempData["ErrorMessage"] = $"Error fetching homes from the database: {ex.Message}";
         }
 
-        // Pass the filter values back to the view to retain them
         homesViewModel.MinPrice = minPrice;
         homesViewModel.MaxPrice = maxPrice;
         homesViewModel.MinArea = minArea;
         homesViewModel.MaxArea = maxArea;
+        homesViewModel.MinBathrooms = minBath; //new
+        homesViewModel.MinGarage = minCar; //new
+        homesViewModel.MinBedrooms = minBed;//new
+        homesViewModel.State = state;//new
+        homesViewModel.City = city;//new
 
         stopwatch.Stop();
 
-        ViewBag.LoadTestTime = stopwatch.Elapsed.TotalSeconds.ToString("F4"); // Return the elapsed time in milliseconds
+        ViewBag.LoadTestTime = stopwatch.Elapsed.TotalSeconds.ToString("F4");
 
         return View(homesViewModel);
     }
@@ -101,10 +100,12 @@ public class HomesController: Controller
         {
             _homeService.AddHome(newHome);
             TempData["SuccessMessage"] = "Home added successfully!";
+            _logger.LogInformation("Home added successfully");
             return RedirectToAction("Index", "Homes"); 
         }
         catch (Exception ex)
         {
+            _logger.LogError($"Error adding home: {ex.Message}");
             TempData["ErrorMessage"] = $"Error adding home: {ex.Message}";
             return View("AddHomeView", newHome); 
         }
@@ -129,10 +130,12 @@ public class HomesController: Controller
         {
             _homeService.UpdateHome(updatedHome);
             TempData["SuccessMessage"] = "Home updated successfully!";
+            _logger.LogInformation("Home updated successfully");
             return RedirectToAction("Index", "Homes");
         }
         catch (Exception ex)
         {
+            _logger.LogError($"Error updating home: {ex.Message}");
             TempData["ErrorMessage"] = $"Error updating home: {ex.Message}";
             return View("HomeDetailView", updatedHome);
         }
@@ -144,10 +147,12 @@ public class HomesController: Controller
         {
             _homeService.DeleteHome(id);
             TempData["SuccessMessage"] = "Home deleted successfully!";
+            _logger.LogInformation("Home deleted successfully");
             return new OkResult();
         }
         catch (Exception ex)
         {
+            _logger.LogError($"Error deleting home: {ex.Message}");
             TempData["ErrorMessage"] = $"Error deleting home: {ex.Message}";
             return BadRequest(new { message = ex.Message });
         }

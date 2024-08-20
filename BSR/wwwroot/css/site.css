@@ -1,9 +1,24 @@
 ﻿.home-price {
     font-weight: 600;
     color: blue;
+    margin-top: -3px;
 }
 
 .home-area {
     font-weight: 600;
     color: red;
+}
+
+.card-city {
+    margin-top: -15px;
+    color: navy;
+}
+
+.home-card-details {
+    margin-top: -15px !important;
+    margin-bottom: -15px;
+}
+
+.btn-pagination {
+    margin-top: -5px;
 }

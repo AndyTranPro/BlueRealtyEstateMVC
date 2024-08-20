@@ -10,61 +10,58 @@ public class HomeService
     public HomeService(HomeContext context)
     {
         _context = context;
-
-        SeedHomes();
     }
 
-    public void SeedHomes()
+    public List<Home> GetHomes(int? minPrice, int? maxPrice, int? minArea, int? maxArea, int? minBath, int? minCar, int? minBed, string? state, string? city)
     {
-        var homes = new List<Home>();
+        IQueryable<Home> homesQuery = _context.Homes.AsQueryable();
 
-        var imageUrls = new List<string>
+        if (minPrice.HasValue)
         {
-            "https://images.unsplash.com/photo-1568605114967-8130f3a36994",
-            "https://images.unsplash.com/photo-1570129477492-45c003edd2be",
-            "https://plus.unsplash.com/premium_photo-1661964475795-f0cb85767a88",
-            "https://images.unsplash.com/photo-1580587771525-78b9dba3b914",
-            "https://images.unsplash.com/photo-1613977257363-707ba9348227",
-            "https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg",
-            "https://images.pexels.com/photos/9951999/pexels-photo-9951999.jpeg",
-            "https://images.pexels.com/photos/5178060/pexels-photo-5178060.jpeg",
-            "https://images.pexels.com/photos/8583869/pexels-photo-8583869.jpeg",
-            "https://images.pexels.com/photos/7710011/pexels-photo-7710011.jpeg",
-            "https://images.pexels.com/photos/5524205/pexels-photo-5524205.jpeg"
-        };
-
-        if (!_context.Homes.Any())
-        {
-            var faker = new Faker("en");
-
-            for (int i = 1; i < 500; i++) 
-            {
-                var home = new Home
-                {
-                    Id = i,
-                    Price = faker.Finance.Amount(200000, 700000), 
-                    StreetAddress = faker.Address.StreetAddress(),
-                    State = faker.Address.State(),
-                    City = faker.Address.City(),
-                    Area = faker.Random.Int(100, 200), 
-                    Bedrooms = faker.Random.Int(1,5),
-                    Bathrooms = faker.Random.Int(1,5),
-                    GarageSpots = faker.Random.Int(1,5),
-                    ImageUrl = imageUrls[i % imageUrls.Count]
-                };
-
-                homes.Add(home);
-            }
-
-            _context.Homes.AddRange(homes);
+            homesQuery = homesQuery.Where(h => h.Price >= minPrice);
         }
 
-        _context.SaveChanges();
-    }
+        if (maxPrice.HasValue)
+        {
+            homesQuery = homesQuery.Where(h => h.Price <= maxPrice);
+        }
 
-    public List<Home> GetHomes()
-    {
-        return _context.Homes.ToList();
+        if (minArea.HasValue)
+        {
+            homesQuery = homesQuery.Where(h => h.Area >= minArea);
+        }
+
+        if (maxArea.HasValue)
+        {
+            homesQuery = homesQuery.Where(h => h.Area <= maxArea);
+        }
+
+        if (minBath.HasValue)
+        {
+            homesQuery = homesQuery.Where(h => h.Bathrooms >= minBath);
+        }
+
+        if (minCar.HasValue)
+        {
+            homesQuery = homesQuery.Where(h => h.GarageSpots >= minCar);
+        }
+
+        if (minBed.HasValue)
+        {
+            homesQuery = homesQuery.Where(h => h.Bedrooms >= minBed);
+        }
+
+        if (!string.IsNullOrEmpty(state))
+        {
+            homesQuery = homesQuery.Where(h => h.State.Equals(state));
+        }
+
+        if (!string.IsNullOrEmpty(city))
+        {
+            homesQuery = homesQuery.Where(h => h.City.Equals(city));
+        }
+
+        return homesQuery.ToList();
     }
 
     public Home GetHomeById(int id)

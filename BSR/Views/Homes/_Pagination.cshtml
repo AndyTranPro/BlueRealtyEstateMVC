@@ -1,0 +1,50 @@
+﻿@{
+    var queryString = $"?minPrice={Model.MinPrice}&maxPrice={Model.MaxPrice}&minArea={Model.MinArea}&maxArea={Model.MaxArea}&pageNumber=";
+}
+
+<div class="pagination" style="display: flex; flex-direction: row; align-items: center; justify-content:space-between; margin-bottom: 20px">
+    @if (Model.PaginationInfo != null)
+    {
+        <div class="row w-80">
+            <div>
+                <h6>
+                    Page @Model.PaginationInfo.CurrentPage of @Model.PaginationInfo.TotalPages
+                </h6>
+            </div>
+        </div>
+
+        <div style="display: flex; flex-direction: row; gap: 20px">
+            @if (@Model.PaginationInfo.TotalPages > 1)
+            {
+                @if (Model.PaginationInfo.HasPreviousPage)
+                {
+                    <div>
+                        <a href="@($"{queryString}1")">First</a>
+                        <a href="@($"{queryString}{Model.PaginationInfo.CurrentPage - 1}")">Previous</a>
+                    </div>
+                }
+                @if (Model.PaginationInfo.HasNextPage)
+                {
+                    <div>
+                        <a class="btn btn-outline-dark" href="@($"{queryString}{Model.PaginationInfo.CurrentPage + 1}")">Next</a>
+                    </div>
+
+                    <div>
+                        <a class="btn btn-outline-dark" href="@($"{queryString}{Model.PaginationInfo.TotalPages}")">Last</a>
+                    </div>
+                }
+                <div>
+                    <form asp-controller="Homes" asp-action="Index" method="get" class="d-inline">
+                        <input type="hidden" name="minPrice" value="@Model.MinPrice" />
+                        <input type="hidden" name="maxPrice" value="@Model.MaxPrice" />
+                        <input type="hidden" name="minArea" value="@Model.MinArea" />
+                        <input type="hidden" name="maxArea" value="@Model.MaxArea" />
+                        <input type="number" name="pageNumber" min="1" max="@Model.PaginationInfo.TotalPages" class="form-control d-inline" style="width: 70px;" />
+                        <button type="submit" class="btn btn-primary">Go</button>
+                    </form>
+                </div>
+            }
+        </div>
+
+    }
+</div>
